@@ -1,0 +1,75 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Plantilla base para despliegue del Backend de BTG Pactual (Spring Boot) en AWS (ECS Fargate + DocumentDB) - Arquitectura Serverless Container'
+
+Resources:
+  # 1. VPC para alojar los servicios 
+  BTGVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+
+  # 2. Clúster de ECS para ejecutar el contenedor de Spring Boot
+  BTGECSCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: BTG-Pactual-Backend-Cluster
+
+  # 3. Repositorio en ECR para guardar la imagen Docker
+  BTGECRRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: btg-pactual-backend
+
+  # 4. Tarea de ECS (Fargate) definiendo los recursos de RAM y CPU
+  BTGTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      RequiresCompatibilities:
+        - FARGATE
+      NetworkMode: awsvpc
+      Cpu: '512'
+      Memory: '1024'
+      ExecutionRoleArn: !GetAtt BTGExecutionRole.Arn
+      ContainerDefinitions:
+        - Name: btg-spring-boot-app
+          Image: !Sub '${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/btg-pactual-backend:latest'
+          PortMappings:
+            - ContainerPort: 8080
+          Environment:
+            - Name: SPRING_PROFILES_ACTIVE
+              Value: prod
+            - Name: SPRING_DATA_MONGODB_URI
+              Value: !Sub 'mongodb://${DBUser}:${DBPassword}@${DocumentDBCluster.Endpoint}:27017/btgpactual?tls=true&replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false'
+
+  # 5. Rol de ejecución para ECS
+  BTGExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+
+  # 6. Base de Datos DocumentDB (Compatible con MongoDB)
+  DocumentDBCluster:
+    Type: AWS::DocDB::DBCluster
+    Properties:
+      MasterUsername: btg_admin
+      MasterUserPassword: SuPerSecurePassword123! # En un entorno real se tomaría desde Parameter Store / Secrets Manager
+      Port: 27017
+      DBClusterIdentifier: btg-mongo-cluster
+      BackupRetentionPeriod: 5
+
+Outputs:
+  ClusterName:
+    Value: !Ref BTGECSCluster
+    Description: Nombre del cluster ECS
+  ECRRepoURI:
+    Value: !GetAtt BTGECRRepository.RepositoryUri
+    Description: URL del repositorio para empujar imágenes Docker
