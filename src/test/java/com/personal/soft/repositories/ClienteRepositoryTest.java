@@ -1,6 +1,6 @@
 package com.personal.soft.repositories;
 
-import com.personal.soft.entities.Cliente;
+import com.personal.soft.models.Cliente;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;

@@ -1,6 +1,6 @@
 package com.personal.soft.repositories;
 
-import com.personal.soft.entities.Transaccion;
+import com.personal.soft.models.Transaccion;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
@@ -21,14 +21,14 @@ class TransaccionRepositoryTest {
     void buscarPorClienteId_DeberiaFuncionar() {
         Transaccion trans = Transaccion.builder()
                 .clienteId("cliente-123")
-                .nombreFondo("Fondo Test")
+                .fondoId("Fondo Test")
                 .monto(new BigDecimal("1000"))
-                .tipo("APERTURA")
+                .tipo(Transaccion.TipoTransaccion.APERTURA)
                 .fecha(LocalDateTime.now())
                 .build();
         transaccionRepository.save(trans);
 
-        List<Transaccion> historial = transaccionRepository.findByClienteId("cliente-123");
+        List<Transaccion> historial = transaccionRepository.findByClienteIdOrderByFechaDesc("cliente-123");
 
         assertThat(historial).isNotEmpty();
         assertThat(historial.get(0).getClienteId()).isEqualTo("cliente-123");

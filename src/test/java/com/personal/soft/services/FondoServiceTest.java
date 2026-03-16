@@ -78,7 +78,7 @@ class FondoServiceTest {
         
         verify(clienteRepository).save(clienteTest);
         verify(transaccionService).registrarTransaccion(eq("c1"), eq("f1"), any(), eq(montoInversion));
-        verify(notificacionContext).notificarSuscripcion(clienteTest, "Fondo Acciones");
+        verify(notificacionContext).notificarSuscripcion(clienteTest, "Fondo Acciones", montoInversion);
     }
 
     @Test
@@ -132,5 +132,6 @@ class FondoServiceTest {
         
         verify(clienteRepository).save(clienteTest);
         verify(transaccionService).registrarTransaccion(eq("c1"), eq("f1"), any(), eq(montoInvertidoPrevio));
+        verify(notificacionContext).notificarCancelacion(clienteTest, "Fondo Acciones", montoInvertidoPrevio);
     }
 }

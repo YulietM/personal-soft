@@ -61,7 +61,7 @@ public class FondoService {
 
         transaccionService.registrarTransaccion(clienteId, fondoId, Transaccion.TipoTransaccion.APERTURA, montoInversion);
 
-        notificacionContext.notificarSuscripcion(cliente, fondo.getNombre());
+        notificacionContext.notificarSuscripcion(cliente, fondo.getNombre(), montoInversion);
     }
 
     public void cancelarSuscripcion(String clienteId, String fondoId) {
@@ -87,5 +87,7 @@ public class FondoService {
         clienteRepository.save(cliente);
 
         transaccionService.registrarTransaccion(clienteId, fondoId, Transaccion.TipoTransaccion.CANCELACION, montoADevolver);
+        
+        notificacionContext.notificarCancelacion(cliente, fondo.getNombre(), montoADevolver);
     }
 }
