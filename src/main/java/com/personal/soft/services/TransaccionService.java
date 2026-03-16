@@ -5,8 +5,7 @@ import com.personal.soft.models.Transaccion;
 import com.personal.soft.repositories.TransaccionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
+import com.personal.soft.exceptions.EntidadNoEncontradaException;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -31,7 +30,7 @@ public class TransaccionService {
 
     public List<Transaccion> obtenerHistorial(String clienteId) {
         if (!clienteRepository.existsById(clienteId)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "El cliente no existe");
+            throw new EntidadNoEncontradaException("El cliente con ID " + clienteId + " no existe");
         }
         return transaccionRepository.findByClienteIdOrderByFechaDesc(clienteId);
     }

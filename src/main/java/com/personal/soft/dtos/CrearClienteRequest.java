@@ -8,6 +8,10 @@ import lombok.Data;
 
 @Data
 public class CrearClienteRequest {
+    @NotNull(message = "La identificación es obligatoria")
+    @jakarta.validation.constraints.Max(value = 9999999999L, message = "La identificación no puede tener más de 10 dígitos")
+    private Long identificacion;
+
     @NotBlank(message = "El nombre es obligatorio")
     private String nombre;
 
@@ -16,6 +20,7 @@ public class CrearClienteRequest {
     private String email;
 
     @NotBlank(message = "El celular es obligatorio")
+    @jakarta.validation.constraints.Pattern(regexp = "^\\+[1-9]\\d{1,14}$", message = "El celular debe incluir el indicativo de país empezando con '+' (ej: +57310...)")
     private String celular;
 
     @NotNull(message = "La preferencia de notificación es obligatoria (EMAIL o SMS)")

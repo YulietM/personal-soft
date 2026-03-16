@@ -52,8 +52,8 @@ class FondoControllerTest {
         doNothing().when(fondoService).suscribirse("c1", "f1", new BigDecimal("50000"));
 
         mockMvc.perform(post("/api/v1/fondos/suscripciones")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.mensaje").exists());
     }
@@ -63,7 +63,7 @@ class FondoControllerTest {
         doNothing().when(fondoService).cancelarSuscripcion("c1", "f1");
 
         mockMvc.perform(delete("/api/v1/fondos/f1/suscripciones")
-                        .param("clienteId", "c1"))
+                .param("clienteId", "c1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.mensaje").exists());
     }

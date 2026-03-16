@@ -8,7 +8,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.web.server.ResponseStatusException;
+import com.personal.soft.exceptions.EntidadNoEncontradaException;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -36,7 +36,8 @@ class TransaccionServiceTest {
         when(transaccionRepository.save(any(Transaccion.class))).thenReturn(mockT);
 
         // When
-        Transaccion resultado = transaccionService.registrarTransaccion("c1", "f1", Transaccion.TipoTransaccion.APERTURA, new BigDecimal("50000"));
+        Transaccion resultado = transaccionService.registrarTransaccion("c1", "f1",
+                Transaccion.TipoTransaccion.APERTURA, new BigDecimal("50000"));
 
         // Then
         assertNotNull(resultado);
@@ -63,7 +64,7 @@ class TransaccionServiceTest {
         when(clienteRepository.existsById("c1")).thenReturn(false);
 
         // When & Then
-        assertThrows(ResponseStatusException.class, () -> transaccionService.obtenerHistorial("c1"));
+        assertThrows(EntidadNoEncontradaException.class, () -> transaccionService.obtenerHistorial("c1"));
         verify(transaccionRepository, never()).findByClienteIdOrderByFechaDesc(anyString());
     }
 }

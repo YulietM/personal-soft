@@ -21,6 +21,16 @@ public class GlobalExceptionHandler {
         return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
     }
 
+    @ExceptionHandler(EntidadNoEncontradaException.class)
+    public ProblemDetail handleEntidadNoEncontradaException(EntidadNoEncontradaException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+    }
+
+    @ExceptionHandler(EntidadYaExisteException.class)
+    public ProblemDetail handleEntidadYaExisteException(EntidadYaExisteException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ProblemDetail handleValidationException(MethodArgumentNotValidException ex) {
         String errores = ex.getBindingResult().getFieldErrors().stream()

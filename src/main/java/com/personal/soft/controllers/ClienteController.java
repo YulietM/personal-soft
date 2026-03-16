@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.PatchMapping;
+import com.personal.soft.dtos.ActualizarClienteRequest;
 
 import java.util.List;
 
@@ -42,5 +44,13 @@ public class ClienteController {
     @Operation(summary = "Crear un nuevo cliente validando que el saldo inicial sea >= 500.000 COP")
     public ResponseEntity<Cliente> crearCliente(@Valid @RequestBody CrearClienteRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(clienteService.crearCliente(request));
+    }
+
+    @PatchMapping("/{id}")
+    @Operation(summary = "Actualizar correo y/o teléfono de un cliente")
+    public ResponseEntity<Cliente> actualizarCliente(
+            @PathVariable String id, 
+            @Valid @RequestBody ActualizarClienteRequest request) {
+        return ResponseEntity.ok(clienteService.actualizarCliente(id, request));
     }
 }

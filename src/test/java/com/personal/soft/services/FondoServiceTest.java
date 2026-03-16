@@ -1,5 +1,8 @@
 package com.personal.soft.services;
 
+import com.personal.soft.dtos.ActualizarClienteRequest;
+import com.personal.soft.exceptions.EntidadNoEncontradaException;
+import com.personal.soft.exceptions.EntidadYaExisteException;
 import com.personal.soft.exceptions.ReglaNegocioException;
 import com.personal.soft.exceptions.SaldoInsuficienteException;
 import com.personal.soft.models.Cliente;
@@ -75,7 +78,7 @@ class FondoServiceTest {
         assertEquals(new BigDecimal("200000"), clienteTest.getSaldo());
         assertEquals(1, clienteTest.getSuscripcionesActivas().size());
         assertEquals("f1", clienteTest.getSuscripcionesActivas().get(0).getFondoId());
-        
+
         verify(clienteRepository).save(clienteTest);
         verify(transaccionService).registrarTransaccion(eq("c1"), eq("f1"), any(), eq(montoInversion));
         verify(notificacionContext).notificarSuscripcion(clienteTest, "Fondo Acciones", montoInversion);
@@ -86,14 +89,14 @@ class FondoServiceTest {
         // Given
         clienteTest.setSaldo(new BigDecimal("100000")); // Saldo menor a la inversión
         BigDecimal montoInversion = new BigDecimal("300000");
-        
+
         when(clienteRepository.findById("c1")).thenReturn(Optional.of(clienteTest));
         when(fondoRepository.findById("f1")).thenReturn(Optional.of(fondoTest));
 
         // When & Then
-        assertThrows(SaldoInsuficienteException.class, 
-                     () -> fondoService.suscribirse("c1", "f1", montoInversion));
-        
+        assertThrows(SaldoInsuficienteException.class,
+                () -> fondoService.suscribirse("c1", "f1", montoInversion));
+
         verify(clienteRepository, never()).save(any());
         verify(transaccionService, never()).registrarTransaccion(any(), any(), any(), any());
     }
@@ -102,13 +105,13 @@ class FondoServiceTest {
     void suscribirse_DeberiaLanzarExcepcion_CuandoMontoMenorAlMinimo() {
         // Given
         BigDecimal montoInversion = new BigDecimal("100000"); // Menor al mínimo de 250k
-        
+
         when(clienteRepository.findById("c1")).thenReturn(Optional.of(clienteTest));
         when(fondoRepository.findById("f1")).thenReturn(Optional.of(fondoTest));
 
         // When & Then
-        assertThrows(ReglaNegocioException.class, 
-                     () -> fondoService.suscribirse("c1", "f1", montoInversion));
+        assertThrows(ReglaNegocioException.class,
+                () -> fondoService.suscribirse("c1", "f1", montoInversion));
     }
 
     @Test
@@ -117,8 +120,7 @@ class FondoServiceTest {
         BigDecimal montoInvertidoPrevio = new BigDecimal("300000");
         clienteTest.setSaldo(new BigDecimal("200000")); // Quedó con 200k
         clienteTest.getSuscripcionesActivas().add(
-                SuscripcionActiva.builder().fondoId("f1").montoInvertido(montoInvertidoPrevio).build()
-        );
+                SuscripcionActiva.builder().fondoId("f1").montoInvertido(montoInvertidoPrevio).build());
 
         when(clienteRepository.findById("c1")).thenReturn(Optional.of(clienteTest));
         when(fondoRepository.findById("f1")).thenReturn(Optional.of(fondoTest));
@@ -129,9 +131,49 @@ class FondoServiceTest {
         // Then
         assertEquals(new BigDecimal("500000"), clienteTest.getSaldo());
         assertTrue(clienteTest.getSuscripcionesActivas().isEmpty());
-        
+
         verify(clienteRepository).save(clienteTest);
         verify(transaccionService).registrarTransaccion(eq("c1"), eq("f1"), any(), eq(montoInvertidoPrevio));
         verify(notificacionContext).notificarCancelacion(clienteTest, "Fondo Acciones", montoInvertidoPrevio);
+    }
+    @Test
+    void suscribirse_DeberiaLanzarExcepcion_CuandoClienteNoExiste() {
+        when(clienteRepository.findById("c1")).thenReturn(Optional.empty());
+        assertThrows(EntidadNoEncontradaException.class, 
+                () -> fondoService.suscribirse("c1", "f1", new BigDecimal("300000")));
+    }
+
+    @Test
+    void suscribirse_DeberiaLanzarExcepcion_CuandoFondoNoExiste() {
+        when(clienteRepository.findById("c1")).thenReturn(Optional.of(clienteTest));
+        when(fondoRepository.findById("f1")).thenReturn(Optional.empty());
+        assertThrows(EntidadNoEncontradaException.class, 
+                () -> fondoService.suscribirse("c1", "f1", new BigDecimal("300000")));
+    }
+
+    @Test
+    void suscribirse_DeberiaLanzarExcepcion_CuandoYaEstaSuscrito() {
+        clienteTest.getSuscripcionesActivas().add(SuscripcionActiva.builder().fondoId("f1").build());
+        when(clienteRepository.findById("c1")).thenReturn(Optional.of(clienteTest));
+        when(fondoRepository.findById("f1")).thenReturn(Optional.of(fondoTest));
+
+        assertThrows(ReglaNegocioException.class, 
+                () -> fondoService.suscribirse("c1", "f1", new BigDecimal("300000")));
+    }
+
+    @Test
+    void cancelarSuscripcion_DeberiaLanzarExcepcion_CuandoClienteNoExiste() {
+        when(clienteRepository.findById("c1")).thenReturn(Optional.empty());
+        assertThrows(EntidadNoEncontradaException.class, 
+                () -> fondoService.cancelarSuscripcion("c1", "f1"));
+    }
+
+    @Test
+    void cancelarSuscripcion_DeberiaLanzarExcepcion_CuandoNoEstaSuscrito() {
+        when(clienteRepository.findById("c1")).thenReturn(Optional.of(clienteTest));
+        when(fondoRepository.findById("f1")).thenReturn(Optional.of(fondoTest));
+
+        assertThrows(ReglaNegocioException.class, 
+                () -> fondoService.cancelarSuscripcion("c1", "f1"));
     }
 }

@@ -19,6 +19,7 @@ import java.util.List;
 public class Cliente {
     @Id
     private String id;
+    private Long identificacion;
     private String nombre;
     private String email;
     private String celular;

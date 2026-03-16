@@ -71,28 +71,42 @@ curl -X GET "http://localhost:8080/api/v1/fondos" \
 
 ### 2. Crear un nuevo cliente (Regla: Inicia con saldo >= $500.000)
 Si deseas crear un cliente propio en lugar de usar el de prueba (`c1`), ejecuta el siguiente POST.
-Asegúrate de mandar el `saldo` con un valor mayor o igual a 500000.
+- `identificacion`: Debe ser un número (**Long**) de máximo 10 dígitos.
+- `celular`: Debe incluir indicativo de país con el prefijo `+` (ej: `+57`).
+
 ```bash
 curl -X POST "http://localhost:8080/api/v1/clientes" \
      -H "Content-Type: application/json" \
      -d '{
+       "identificacion": 1020304050,
        "nombre": "Sofia G.",
        "email": "sofia@example.com",
-       "celular": "3015555555",
+       "celular": "+573015555555",
        "saldo": 500000,
        "preferenciaNotificacion": "SMS"
      }'
 ```
 *(Copia el `id` que te devuelve la respuesta para usarlo como `clienteId` en los siguientes comandos)*
 
-### 3. Verificar el saldo inicial del cliente
+### 3. Actualizar Datos de Contacto del Cliente
+Permite cambiar el correo y/o el celular de forma independiente.
+```bash
+curl -X PATCH "http://localhost:8080/api/v1/clientes/{id_del_cliente}" \
+     -H "Content-Type: application/json" \
+     -d '{
+       "email": "nuevo_correo@example.com",
+       "celular": "+573140000000"
+     }'
+```
+
+### 4. Verificar datos del cliente
 ```bash
 # Cambia "c1" por el id que copiaste en el paso interior si creaste uno nuevo
 curl -X GET "http://localhost:8080/api/v1/clientes/c1" \
      -H "Accept: application/json"
 ```
 
-### 4. Suscribirse a un Fondo
+### 5. Suscribirse a un Fondo
 Ejemplo: El cliente invierte **$50.000 COP** en el fondo DEUDAPRIVADA (ID: `3`).
 ```bash
 curl -X POST "http://localhost:8080/api/v1/fondos/suscripciones" \
@@ -104,17 +118,17 @@ curl -X POST "http://localhost:8080/api/v1/fondos/suscripciones" \
      }'
 ```
 
-### 5. Consultar el nuevo saldo del cliente
-Puedes volver a correr el paso 3 y notar que el saldo debe haber bajado de $500.000 a $450.000, además de ver que ese fondo activo entró a su arreglo interno de `suscripcionesActivas`.
+### 6. Consultar el nuevo saldo del cliente
+Puedes volver a correr el paso 4 y notar que el saldo debe haber bajado de $500.000 a $450.000, además de ver que ese fondo activo entró a su arreglo interno de `suscripcionesActivas`.
 
-### 5. Ver el Historial de Transacciones (del cliente)
+### 7. Ver el Historial de Transacciones (del cliente)
 Verificamos que haya quedado el registro de APERTURA:
 ```bash
 curl -X GET "http://localhost:8080/api/v1/transacciones/cliente/c1" \
      -H "Accept: application/json"
 ```
 
-### 6. Cancelar Suscripción a un Fondo (Devolución)
+### 8. Cancelar Suscripción a un Fondo (Devolución)
 Ejemplo: El cliente `c1` cancela su fondo DEUDAPRIVADA (ID: `3`):
 ```bash
 curl -X DELETE "http://localhost:8080/api/v1/fondos/3/suscripciones?clienteId=c1"

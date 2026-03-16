@@ -53,19 +53,48 @@ class ClienteControllerTest {
     @Test
     void crearCliente_DeberiaRetornar201() throws Exception {
         CrearClienteRequest request = new CrearClienteRequest();
+        request.setIdentificacion(1234567890L);
         request.setNombre("Test");
         request.setEmail("test@test.com");
-        request.setCelular("12345678");
+        request.setCelular("+573001234567"); // Formato E.164
         request.setSaldo(new BigDecimal("500000"));
         request.setPreferenciaNotificacion(Cliente.TipoNotificacion.EMAIL);
 
-        Cliente clienteResponse = Cliente.builder().id("id1").nombre("Test").build();
+        Cliente clienteResponse = Cliente.builder()
+                .id("id1")
+                .identificacion(1234567890L)
+                .nombre("Test")
+                .build();
         when(clienteService.crearCliente(any())).thenReturn(clienteResponse);
 
         mockMvc.perform(post("/api/v1/clientes")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.nombre").value("Test"));
+                .andExpect(jsonPath("$.nombre").value("Test"))
+                .andExpect(jsonPath("$.identificacion").value(1234567890L));
+    }
+
+    @Test
+    void actualizarCliente_DeberiaRetornar200() throws Exception {
+        com.personal.soft.dtos.ActualizarClienteRequest request = new com.personal.soft.dtos.ActualizarClienteRequest();
+        request.setEmail("nuevo@test.com");
+        request.setCelular("+573145556677");
+
+        Cliente clienteUpdated = Cliente.builder()
+                .id("c1")
+                .email("nuevo@test.com")
+                .celular("+573145556677")
+                .build();
+
+        when(clienteService.actualizarCliente(any(), any())).thenReturn(clienteUpdated);
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                        .patch("/api/v1/clientes/c1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.email").value("nuevo@test.com"))
+                .andExpect(jsonPath("$.celular").value("+573145556677"));
     }
 }

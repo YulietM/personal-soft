@@ -1,5 +1,6 @@
 package com.personal.soft.services;
 
+import com.personal.soft.exceptions.EntidadNoEncontradaException;
 import com.personal.soft.exceptions.FondoNoEncontradoException;
 import com.personal.soft.exceptions.ReglaNegocioException;
 import com.personal.soft.exceptions.SaldoInsuficienteException;
@@ -28,7 +29,7 @@ public class FondoService {
 
     public void suscribirse(String clienteId, String fondoId, BigDecimal montoInversion) {
         Cliente cliente = clienteRepository.findById(clienteId)
-                .orElseThrow(() -> new ReglaNegocioException("Cliente no encontrado"));
+                .orElseThrow(() -> new EntidadNoEncontradaException("Cliente con ID " + clienteId + " no encontrado"));
 
         Fondo fondo = fondoRepository.findById(fondoId)
                 .orElseThrow(() -> new FondoNoEncontradoException(fondoId));
@@ -65,8 +66,9 @@ public class FondoService {
     }
 
     public void cancelarSuscripcion(String clienteId, String fondoId) {
+
         Cliente cliente = clienteRepository.findById(clienteId)
-                .orElseThrow(() -> new ReglaNegocioException("Cliente no encontrado"));
+                .orElseThrow(() -> new EntidadNoEncontradaException("Cliente con ID " + clienteId + " no encontrado"));
                 
         Fondo fondo = fondoRepository.findById(fondoId)
                 .orElseThrow(() -> new FondoNoEncontradoException(fondoId));
