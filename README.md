@@ -29,7 +29,31 @@ El proyecto sigue una estructura inspirada en **Clean Architecture**:
 - Docker y Docker Compose instalados.
 - Java 21 (si deseas ejecutarlo fuera de Docker).
 
-### 2. Levantar la Aplicación
+### 2. Configuración de Variables de Entorno (.env)
+Para que el sistema de notificaciones y la conexión a la base de datos funcionen correctamente, debes crear un archivo llamado `.env` en la raíz del proyecto.
+
+**Pasos:**
+1. Crea el archivo `.env` en la carpeta principal.
+2. Copia y pega el siguiente contenido (reemplaza con tus credenciales reales):
+
+```env
+# Configuración Brevo (Email)
+BREVO_API_KEY=tu_api_key_aqui
+BREVO_SENDER_EMAIL=tu_correo@example.com
+
+# Configuración Twilio (SMS)
+TWILIO_ACCOUNT_SID=tu_sid_aqui
+TWILIO_AUTH_TOKEN=tu_token_aqui
+TWILIO_PHONE_NUMBER=+1234567890
+```
+
+> [!NOTE]
+> **Limitaciones de Notificaciones:**
+> - **SMS:** Debido a que se utiliza el nivel gratuito de Twilio, los mensajes SMS **solo se enviarán exitosamente al número de teléfono verificado** en la cuenta de Twilio (el número del desarrollador).
+> - **Emails:** Las notificaciones por correo electrónico se envían sin restricciones a cualquier destinatario a través de Brevo.
+> - envio el archivo con las variables al correo
+
+### 3. Levantar la Aplicación
 El proyecto incluye un `docker-compose.yml` que levanta tanto MongoDB como la aplicación.
 
 Abre una terminal en la raíz y ejecuta:
@@ -106,7 +130,14 @@ curl -X GET "http://localhost:8080/api/v1/clientes/c1" \
      -H "Accept: application/json"
 ```
 
-### 5. Suscribirse a un Fondo
+### 5. Consultar Saldo del Cliente (Endpoint Específico)
+Si solo deseas obtener el saldo y el nombre del cliente:
+```bash
+curl -X GET "http://localhost:8080/api/v1/clientes/c1/saldo" \
+     -H "Accept: application/json"
+```
+
+### 6. Suscribirse a un Fondo
 Ejemplo: El cliente invierte **$50.000 COP** en el fondo DEUDAPRIVADA (ID: `3`).
 ```bash
 curl -X POST "http://localhost:8080/api/v1/fondos/suscripciones" \
@@ -118,8 +149,8 @@ curl -X POST "http://localhost:8080/api/v1/fondos/suscripciones" \
      }'
 ```
 
-### 6. Consultar el nuevo saldo del cliente
-Puedes volver a correr el paso 4 y notar que el saldo debe haber bajado de $500.000 a $450.000, además de ver que ese fondo activo entró a su arreglo interno de `suscripcionesActivas`.
+### 7. Consultar el nuevo saldo del cliente
+Puedes volver a correr el paso 5 y notar que el saldo debe haber bajado de $500.000 a $450.000, además de ver que ese fondo activo entró a su arreglo interno de `suscripcionesActivas`.
 
 ### 7. Ver el Historial de Transacciones (del cliente)
 Verificamos que haya quedado el registro de APERTURA:
@@ -134,6 +165,17 @@ Ejemplo: El cliente `c1` cancela su fondo DEUDAPRIVADA (ID: `3`):
 curl -X DELETE "http://localhost:8080/api/v1/fondos/3/suscripciones?clienteId=c1"
 ```
 *Si verificas el saldo después de este paso, los $50.000 habrán regresado a la cuenta, y si verificas las transacciones, existirá un registro de CANCELACION.*
+
+---
+
+## 📊 Parte 2: Resolución de Consultas SQL Avanzadas
+
+La resolución de la segunda parte de la prueba, correspondiente a las consultas SQL avanzadas solicitadas, se encuentra en el archivo:
+👉 **[parte-2-consultaSQL.sql](file:///Users/yulietmurcia/Documents/prueba-personalSoft/parte-2-consultaSQL.sql)**
+
+Este archivo contiene las sentencias SQL para resolver los puntos de:
+1. Listar clientes que tienen productos vigentes en sucursales específicas.
+2. Identificar clientes que no han tenido movimientos en un periodo determinado.
 
 ---
 

@@ -20,6 +20,8 @@ services:
       - "8080:8080"
     depends_on:
       - mongodb
+    env_file:
+      - .env
     environment:
       # URL de conexión apuntando  'mongodb' definido arriba
       - SPRING_DATA_MONGODB_URI=mongodb://admin:password@mongodb:27017/prueba-personalSoft?authSource=admin
